@@ -1,0 +1,99 @@
+# GaugeAlign -- the exact configuration of the rank-1 submission.
+#
+#   AI City Challenge 2026, Track 1 (Multi-Camera 3D Perception, Sim2Real)
+#   Team EVA (289) -- 3D HOTA 56.5447 on the final full hidden test set
+#   DetA 55.6444 | AssA 49.3929 | LocA 79.5558
+#
+# Every value below is what `scripts/reproduce_cd95.sh` passes on the command
+# line. Nothing here is tuned on the test set: the gauge shift comes from
+# calibration, the class remap is a fixed protocol correction, and lambda was
+# chosen on the validation scenes (see docs/RESULTS.md for the full trail).
+#
+# The detector is the public NVIDIA TAO checkpoint, used FROZEN -- no
+# fine-tuning of any kind entered this result (see docs/REPRODUCE.md).
+
+name: gaugealign_cd95
+paper_table: "Table 1, row '+ temporal adaptation lambda=0.95 (submitted)'"
+
+# ---------------------------------------------------------------- detector ---
+detector:
+  family: Sparse4D                      # NVIDIA TAO, outside-in warehouse model
+  backbone: ResNet-50
+  version: deployable_v2.2
+  checkpoint: sparse4d_warehouse_v2.2_r50.pth
+  anchor_file: _ov_kmeans900_v2.2_r50.npy   # 900 k-means anchors, TRAINING gauge
+  experiment_yaml: experiment.yaml          # ships with the NGC model
+  frozen: true                              # no weights are updated, ever
+  source: https://catalog.ngc.nvidia.com/orgs/nvidia/teams/tao/models/sparse4d_rn50
+  license: NVIDIA Open Model License
+
+# ------------------------------------------- 1. scene canonicalization -------
+# The core operator. C-bar = mean camera position, from calibration only.
+# Applied to the extrinsics as t_i' = t_i + R_i * C-bar before inference; the
+# exact inverse (+ C-bar) is added back to every predicted box centre.
+# Label-free, exactly invertible (< 1e-6 m round trip), plug-in.
+canonicalization:
+  enabled: true
+  mode: auto_center                     # build_pkl.py --auto_center
+  functional: mean_camera_position      # C_i = -R_i^T t_i ; C-bar = mean_i C_i
+  axes: [x, y]                          # z is already gravity-aligned
+  per_scene_shifts: configs/scenes.yaml # pinned values, for auditing
+
+# ------------------------------------------- 2. protocol alignment -----------
+# The detector's class indices are not the official Track-1 ids.
+# Removing this costs 2.83 DetA on W022 (Table 3).
+protocol_alignment:
+  class_remap: {0: 0, 1: 4, 2: 5, 3: 2, 4: 3, 5: 1, 6: 6}   # NGC -> official
+  class_names: [Person, Forklift, NovaCarter, Transporter,
+                FourierGR1T2, AgilityDigit, PalletTruck]      # official ids 0..6
+  to_rgb: 0                             # keep BGR channel order (matches training)
+
+# ------------------------------------------- 3. temporal prior adaptation ----
+# The instance bank multiplies an unmatched instance's confidence by lambda per
+# frame. Raising 0.8 -> 0.95 stretches the occlusion horizon ~4.4x.
+temporal_prior:
+  confidence_decay: 0.95                # lambda   (native default: 0.8)
+  num_temp_instances: 600               # unchanged from the released model
+  max_time_interval: 2                  # unchanged
+
+# ---------------------------------------------------------------- inference --
+inference:
+  resolution: [960, 540]                # half_res; identical model input to
+                                        # full-res + the model's own 0.5 resize
+  frame_stride: 1                       # native frame rate, every frame
+  score_thr: 0.2                        # emission threshold
+  dec_thr: 0.0                          # decoder score_threshold override
+  num_workers: 6
+  online: true                          # verified by scripts/prefix_check.py
+
+# ------------------------------------------------------------ post-process ---
+# Geometric floor-ROI filter only. NO temporal post-processing: gap
+# interpolation and NMS were tried (bundlefix, 56.38) and discarded because
+# gap interpolation reads future frames and forfeits the online status.
+postprocess:
+  floor_roi:
+    enabled: true
+    margin: 20.0                        # metres beyond the camera-centre bounds
+    z_min: -0.5
+    z_max: 3.2
+  nms: null
+  gap_interpolation: null                # non-causal -- deliberately unused
+  hysteresis: null                       # regressed DetA at every setting
+
+# ------------------------------------------------------------------ scenes ---
+test_scenes:                             # scene_id: number of frames
+  23: 9000
+  24: 9000
+  25: 9000
+  26: 1800
+  27: 1800
+
+# ----------------------------------------------------------------- results ---
+expected_result:
+  split: final full hidden test set (100%)
+  HOTA: 56.5447
+  DetA: 55.6444
+  AssA: 49.3929
+  LocA: 79.5558
+  rank: 1
+  runner_up: {team: SKKU-AL-T1, HOTA: 52.0118}

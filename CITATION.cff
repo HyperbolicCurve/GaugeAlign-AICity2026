@@ -1,0 +1,60 @@
+cff-version: 1.2.0
+message: "If you use this software or its findings, please cite the paper below."
+title: "GaugeAlign: Gauge Canonicalization for Multi-Camera 3D Perception under Sim-to-Real Transfer"
+abstract: >-
+  First-place solution to Track 1 (Multi-Camera 3D Perception, Sim2Real) of the
+  2026 AI City Challenge. Identifies the anchor-gauge coupling, a geometric
+  failure mode in which a query-based 3D detector's learned spatial prior binds
+  it to the training world frame, and repairs it with a closed-form, label-free,
+  exactly invertible scene canonicalization operator applied at inference time.
+type: software
+license: MIT
+repository-code: "https://github.com/HyperbolicCurve/GaugeAlign-AICity2026"
+authors:
+  - family-names: Wu
+    given-names: Xianjin
+    affiliation: Huazhong University of Science and Technology
+  - family-names: Fang
+    given-names: Heng
+    affiliation: Huazhong University of Science and Technology
+  - family-names: Xi
+    given-names: Xuanyang
+    affiliation: Huawei Technologies Co. Ltd
+  - family-names: Tang
+    given-names: Yiping
+    affiliation: Huawei Technologies Co. Ltd
+  - family-names: Xu
+    given-names: Di
+    affiliation: Huawei Technologies Co. Ltd
+  - family-names: Bai
+    given-names: Xiang
+    affiliation: Huazhong University of Science and Technology
+  - family-names: Liang
+    given-names: Dingkang
+    affiliation: Huazhong University of Science and Technology
+keywords:
+  - multi-camera 3D tracking
+  - sim-to-real transfer
+  - canonicalization
+  - query-based detection
+  - AI City Challenge
+preferred-citation:
+  type: conference-paper
+  title: "Aligning Learned Spatial Priors: Gauge Canonicalization for Multi-Camera 3D Perception under Sim-to-Real Transfer"
+  collection-title: "Proceedings of the European Conference on Computer Vision (ECCV) Workshops"
+  year: 2026
+  authors:
+    - family-names: Wu
+      given-names: Xianjin
+    - family-names: Fang
+      given-names: Heng
+    - family-names: Xi
+      given-names: Xuanyang
+    - family-names: Tang
+      given-names: Yiping
+    - family-names: Xu
+      given-names: Di
+    - family-names: Bai
+      given-names: Xiang
+    - family-names: Liang
+      given-names: Dingkang

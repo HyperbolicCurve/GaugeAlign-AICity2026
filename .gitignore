@@ -1,0 +1,46 @@
+# ---- runtime outputs --------------------------------------------------------
+work/
+runs/
+logs/
+*.log
+
+# ---- third-party checkouts (fetched by scripts/setup_*.sh) ------------------
+third_party/tao_pytorch_backend/
+third_party/TrackEval/
+
+# ---- large artifacts that must NOT be committed -----------------------------
+# model weights (get them from NGC -- see docs/INSTALL.md)
+*.pth
+*.onnx
+*.engine
+# scene caches + decoded frames
+*.pkl
+frames_*/
+# predictions / submissions
+pred_*.txt
+track1*.txt
+track1*.zip
+# dataset
+data/
+*.mp4
+*.h5
+
+# our small trained heads ARE tracked (a few hundred KB) -- keep them
+!gaugealign/assoc/cvc_head_init.pt
+!gaugealign/assoc/cvc_head_trained.pt
+
+# ---- python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+env/
+
+# ---- editors / OS -----------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+*.swp

@@ -1,0 +1,40 @@
+# Per-scene gauge parameters for AI City Challenge 2026 Track 1.
+#
+# `shift` is C-bar, the mean camera position (the canonical frame functional).
+# It is derived from calibration.json alone -- no ground truth, no images -- and
+# is reproduced exactly by:
+#
+#     python -m gaugealign.scene_center --dataset_root <MTMC_Tracking_2026> --split test
+#
+# The pipeline normally computes it on the fly (`build_pkl.py --auto_center`);
+# these values are pinned here so a run can be audited without the dataset, and
+# so the numbers quoted in the paper are checkable.
+#
+# Convention: the canonical scene replaces each extrinsic translation by
+#   t_i' = t_i + R_i * C-bar        (paper Eq. 6)
+# and every predicted box centre gets C-bar added back afterwards. The round
+# trip is exact to < 1e-6 m. Only xy is shifted; z is already gravity-aligned.
+
+dataset: PhysicalAI-SmartSpaces / MTMC_Tracking_2026
+
+test:                        # the hidden test set (5 scenes) -- the 56.54 submission
+  Warehouse_023: {scene_id: 23, cameras: 20, frames: 9000, shift: [-43.5309, -50.9003], c_bar_norm: 66.98}
+  Warehouse_024: {scene_id: 24, cameras: 20, frames: 9000, shift: [-43.5309, -50.9003], c_bar_norm: 66.98}
+  Warehouse_025: {scene_id: 25, cameras: 10, frames: 9000, shift: [-11.3245,   2.9237], c_bar_norm: 11.70}
+  Warehouse_026: {scene_id: 26, cameras:  4, frames: 1800, shift: [ -6.8022,  -1.7110], c_bar_norm:  7.01}
+  Warehouse_027: {scene_id: 27, cameras:  7, frames: 1800, shift: [ -3.7758,   4.5543], c_bar_norm:  5.92}
+
+val:                         # the controlled studies (Sec. 4.3) run here
+  Warehouse_020: {scene_id: 20, cameras: 16, shift: [-62.1733, -59.4065], c_bar_norm:  85.99}
+  Warehouse_021: {scene_id: 21, cameras: 16, shift: [-62.1733, -59.4065], c_bar_norm:  85.99}
+  Warehouse_022: {scene_id: 22, cameras:  4, shift: [-62.7303, -83.0016], c_bar_norm: 104.04}
+
+# Reference: the detector's k-means anchor prior (900 anchors, training gauge)
+# is centred at xy = (4.20, 0.20). The validation scenes sit 86-104 m away from
+# it in absolute site coordinates, which is what drives the collapse in Sec. 3.2.
+anchor_prior:
+  file: _ov_kmeans900_v2.2_r50.npy
+  num_anchors: 900
+  mean_xy: [4.20, 0.20]
+  extent_x: [-80.2, 86.4]
+  extent_y: [-125.6, 124.7]

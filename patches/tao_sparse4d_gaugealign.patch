@@ -1,0 +1,737 @@
+diff --git a/nvidia_tao_pytorch/cv/backbone_v2/__init__.py b/nvidia_tao_pytorch/cv/backbone_v2/__init__.py
+index d951cb6..4b141a1 100644
+--- a/nvidia_tao_pytorch/cv/backbone_v2/__init__.py
++++ b/nvidia_tao_pytorch/cv/backbone_v2/__init__.py
+@@ -1,87 +1,19 @@
+ # SPDX-FileCopyrightText: Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+ # SPDX-License-Identifier: Apache-2.0
+ 
+-"""Backbone module.
++"""Backbone module (resilient import for Sparse4D inference).
+ 
+-TODO(yuw, hongyu): Replace `nvidia_tao_pytorch.cv.backbone` with
+-`nvidia_tao_pytorch.cv.backbone_v2` once all backbones are unified.
++Only `resnet` is required by the Sparse4D warehouse model. The other backbones
++pull heavy optional deps (transformers, open_clip, einops, ...). Import them
++best-effort so a missing optional dep does not break resnet-based models.
++Registration into BACKBONE_REGISTRY happens as a side effect of importing each
++backbone module (its @register decorators run at import time).
+ """
++import importlib as _importlib
++
+ from nvidia_tao_pytorch.cv.backbone_v2.registry import BACKBONE_REGISTRY
+ 
+-from nvidia_tao_pytorch.cv.backbone_v2.fastervit import (
+-    faster_vit_0_224,
+-    faster_vit_1_224,
+-    faster_vit_2_224,
+-    faster_vit_3_224,
+-    faster_vit_4_224,
+-    faster_vit_5_224,
+-    faster_vit_6_224,
+-    faster_vit_4_21k_224,
+-    faster_vit_4_21k_384,
+-    faster_vit_4_21k_512,
+-    faster_vit_4_21k_768,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.fan import (
+-    fan_tiny_12_p16_224,
+-    fan_small_12_p16_224_se_attn,
+-    fan_small_12_p16_224,
+-    fan_base_18_p16_224,
+-    fan_large_24_p16_224,
+-    fan_tiny_8_p4_hybrid,
+-    fan_small_12_p4_hybrid,
+-    fan_base_16_p4_hybrid,
+-    fan_large_16_p4_hybrid,
+-    fan_xlarge_16_p4_hybrid,
+-    fan_swin_tiny_patch4_window7_224,
+-    fan_swin_small_patch4_window7_224,
+-    fan_swin_base_patch4_window7_224,
+-    fan_swin_large_patch4_window7_224,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.dino_v2 import (
+-    vit_large_patch14_dinov2_swiglu,
+-    vit_large_patch14_dinov2_swiglu_legacy,
+-    vit_giant_patch14_reg4_dinov2_swiglu,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.efficientvit import (
+-    efficientvit_b0,
+-    efficientvit_b1,
+-    efficientvit_b2,
+-    efficientvit_b3,
+-    efficientvit_l0,
+-    efficientvit_l1,
+-    efficientvit_l2,
+-    efficientvit_l3,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.vit import (
+-    vit_base_patch16,
+-    vit_large_patch16,
+-    vit_huge_patch14,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.convnext import (
+-    convnext_tiny,
+-    convnext_small,
+-    convnext_base,
+-    convnext_large,
+-    convnext_xlarge,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.convnext_v2 import (
+-    convnextv2_atto,
+-    convnextv2_femto,
+-    convnextv2_pico,
+-    convnextv2_nano,
+-    convnextv2_tiny,
+-    convnextv2_base,
+-    convnextv2_large,
+-    convnextv2_huge,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.hiera import (
+-    hiera_tiny_224,
+-    hiera_small_224,
+-    hiera_base_224,
+-    hiera_base_plus_224,
+-    hiera_large_224,
+-    hiera_huge_224,
+-)
++# resnet is REQUIRED (Sparse4D uses resnet_50); let it raise if broken.
+ from nvidia_tao_pytorch.cv.backbone_v2.resnet import (
+     resnet_18,
+     resnet_34,
+@@ -94,195 +26,20 @@ from nvidia_tao_pytorch.cv.backbone_v2.resnet import (
+     resnet_101d,
+     resnet_152d,
+ )
+-from nvidia_tao_pytorch.cv.backbone_v2.swin import (
+-    swin_tiny_patch4_window7_224,
+-    swin_small_patch4_window7_224,
+-    swin_base_patch4_window7_224,
+-    swin_large_patch4_window7_224,
+-    swin_base_patch4_window12_384,
+-    swin_large_patch4_window12_384,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.dinat import (
+-    dinat_large_kernel7,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.gcvit import (
+-    gc_vit_xxtiny,
+-    gc_vit_xtiny,
+-    gc_vit_tiny,
+-    gc_vit_small,
+-    gc_vit_base,
+-    gc_vit_large,
+-    gc_vit_base_384,
+-    gc_vit_large_384,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.edgenext import (
+-    edgenext_xx_small,
+-    edgenext_x_small,
+-    edgenext_small,
+-    edgenext_base,
+-    edgenext_xx_small_bn_hs,
+-    edgenext_x_small_bn_hs,
+-    edgenext_small_bn_hs,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.radio import (
+-    c_radio_p1_vit_huge_patch16_mlpnorm,
+-    c_radio_p2_vit_huge_patch16_mlpnorm,
+-    c_radio_p3_vit_huge_patch16_mlpnorm,
+-    c_radio_v2_vit_base_patch16,
+-    c_radio_v2_vit_large_patch16,
+-    c_radio_v2_vit_huge_patch16,
+-    c_radio_v3_vit_base_patch16_reg4_dinov2,
+-    c_radio_v3_vit_large_patch16_reg4_dinov2,
+-    c_radio_v3_vit_huge_patch16_reg4_dinov2,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.open_clip import (
+-    vit_l_14_siglip_clipa_224,
+-    vit_l_14_siglip_clipa_336,
+-    vit_h_14_siglip_clipa_224,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.siglip2 import (
+-    siglip2_so400m_patch16_512,
+-    siglip2_so400m,
+-    siglip2_g_384,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.sam3 import (
+-    sam3_default,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.dino_v3 import (
+-    dinov3_vit7b16,
+-    dinov3_vitl16,
+-    dinov3_vitb16,
+-    dinov3_vith16plus,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.mit import (
+-    mit_b0,
+-    mit_b1,
+-    mit_b2,
+-    mit_b3,
+-    mit_b4,
+-    mit_b5,
+-)
+-from nvidia_tao_pytorch.cv.backbone_v2.vit_codetr import (
+-    vit_large_codetr,
+-)
++
++# Everything else is optional — import best-effort.
++for _mod in (
++    "fastervit", "fan", "dino_v2", "efficientvit", "vit", "convnext",
++    "convnext_v2", "hiera", "swin", "dinat", "gcvit", "edgenext", "radio",
++    "open_clip", "siglip2", "sam3", "dino_v3", "mit", "vit_codetr",
++):
++    try:
++        _importlib.import_module(f"nvidia_tao_pytorch.cv.backbone_v2.{_mod}")
++    except Exception:
++        pass
+ 
+ __all__ = [
+     "BACKBONE_REGISTRY",
+-    "faster_vit_0_224",
+-    "faster_vit_1_224",
+-    "faster_vit_2_224",
+-    "faster_vit_3_224",
+-    "faster_vit_4_224",
+-    "faster_vit_5_224",
+-    "faster_vit_6_224",
+-    "faster_vit_4_21k_224",
+-    "faster_vit_4_21k_384",
+-    "faster_vit_4_21k_512",
+-    "faster_vit_4_21k_768",
+-    "fan_tiny_12_p16_224",
+-    "fan_small_12_p16_224_se_attn",
+-    "fan_small_12_p16_224",
+-    "fan_base_18_p16_224",
+-    "fan_large_24_p16_224",
+-    "fan_tiny_8_p4_hybrid",
+-    "fan_small_12_p4_hybrid",
+-    "fan_base_16_p4_hybrid",
+-    "fan_large_16_p4_hybrid",
+-    "fan_xlarge_16_p4_hybrid",
+-    "fan_swin_tiny_patch4_window7_224",
+-    "fan_swin_small_patch4_window7_224",
+-    "fan_swin_base_patch4_window7_224",
+-    "fan_swin_large_patch4_window7_224",
+-    "vit_large_patch14_dinov2_swiglu",
+-    "vit_large_patch14_dinov2_swiglu_legacy",
+-    "vit_giant_patch14_reg4_dinov2_swiglu",
+-    "efficientvit_b0",
+-    "efficientvit_b1",
+-    "efficientvit_b2",
+-    "efficientvit_b3",
+-    "efficientvit_l0",
+-    "efficientvit_l1",
+-    "efficientvit_l2",
+-    "efficientvit_l3",
+-    "vit_base_patch16",
+-    "vit_large_patch16",
+-    "vit_huge_patch14",
+-    "convnext_tiny",
+-    "convnext_small",
+-    "convnext_base",
+-    "convnext_large",
+-    "convnext_xlarge",
+-    "convnextv2_atto",
+-    "convnextv2_femto",
+-    "convnextv2_pico",
+-    "convnextv2_nano",
+-    "convnextv2_tiny",
+-    "convnextv2_base",
+-    "convnextv2_large",
+-    "convnextv2_huge",
+-    "hiera_tiny_224",
+-    "hiera_small_224",
+-    "hiera_base_224",
+-    "hiera_base_plus_224",
+-    "hiera_large_224",
+-    "hiera_huge_224",
+-    "resnet_18",
+-    "resnet_34",
+-    "resnet_50",
+-    "resnet_101",
+-    "resnet_152",
+-    "resnet_18d",
+-    "resnet_34d",
+-    "resnet_50d",
+-    "resnet_101d",
+-    "resnet_152d",
+-    "swin_tiny_patch4_window7_224",
+-    "swin_small_patch4_window7_224",
+-    "swin_base_patch4_window7_224",
+-    "swin_large_patch4_window7_224",
+-    "swin_base_patch4_window12_384",
+-    "swin_large_patch4_window12_384",
+-    "dinat_large_kernel7",
+-    "gc_vit_xxtiny",
+-    "gc_vit_xtiny",
+-    "gc_vit_tiny",
+-    "gc_vit_small",
+-    "gc_vit_base",
+-    "gc_vit_large",
+-    "gc_vit_base_384",
+-    "gc_vit_large_384",
+-    "edgenext_xx_small",
+-    "edgenext_x_small",
+-    "edgenext_small",
+-    "edgenext_base",
+-    "edgenext_xx_small_bn_hs",
+-    "edgenext_x_small_bn_hs",
+-    "edgenext_small_bn_hs",
+-    "c_radio_p1_vit_huge_patch16_mlpnorm",
+-    "c_radio_p2_vit_huge_patch16_mlpnorm",
+-    "c_radio_p3_vit_huge_patch16_mlpnorm",
+-    "c_radio_v2_vit_base_patch16",
+-    "c_radio_v2_vit_large_patch16",
+-    "c_radio_v2_vit_huge_patch16",
+-    "c_radio_v3_vit_large_patch16_reg4_dinov2",
+-    "c_radio_v3_vit_base_patch16_reg4_dinov2",
+-    "c_radio_v3_vit_huge_patch16_reg4_dinov2",
+-    "vit_l_14_siglip_clipa_224",
+-    "vit_l_14_siglip_clipa_336",
+-    "vit_h_14_siglip_clipa_224",
+-    "mit_b0",
+-    "mit_b1",
+-    "mit_b2",
+-    "mit_b3",
+-    "mit_b4",
+-    "mit_b5",
+-    "siglip2_so400m_patch16_512",
+-    "siglip2_so400m",
+-    "siglip2_g_384",
+-    "sam3_default",
+-    "dinov3_vit7b16",
+-    "dinov3_vitl16",
+-    "dinov3_vitb16",
+-    "dinov3_vith16plus",
+-    "vit_large_codetr",
++    "resnet_18", "resnet_34", "resnet_50", "resnet_101", "resnet_152",
++    "resnet_18d", "resnet_34d", "resnet_50d", "resnet_101d", "resnet_152d",
+ ]
+diff --git a/nvidia_tao_pytorch/cv/sparse4d/model/criterion.py b/nvidia_tao_pytorch/cv/sparse4d/model/criterion.py
+index 83d3ab7..1c5c894 100644
+--- a/nvidia_tao_pytorch/cv/sparse4d/model/criterion.py
++++ b/nvidia_tao_pytorch/cv/sparse4d/model/criterion.py
+@@ -6,6 +6,7 @@
+ import torch
+ from torch import nn
+ import torch.nn.functional as F
++import os
+ 
+ from nvidia_tao_pytorch.cv.sparse4d.model.detection3d.target import SparseBox3DTarget
+ from nvidia_tao_pytorch.cv.sparse4d.model.box3d import X, Y, Z, SIN_YAW, COS_YAW, CNS, YNS
+@@ -64,7 +65,10 @@ class SetCriterion(nn.Module):
+         self.reg_weights = head_config["reg_weights"]
+         self.cls_threshold_to_reg = head_config["cls_threshold_to_reg"]
+         self.cls_loss_config = head_config["loss"]["cls"]
+-        self.loss_cls = FocalLoss(gamma=self.cls_loss_config["gamma"], alpha=self.cls_loss_config["alpha"], loss_weight=self.cls_loss_config["loss_weight"])
++        # optional per-class weight (rare-class reweighting for fine-tune); default None
++        _cw = self.cls_loss_config.get("class_weight", None) if hasattr(self.cls_loss_config, "get") else None
++        self.loss_cls = FocalLoss(gamma=self.cls_loss_config["gamma"], alpha=self.cls_loss_config["alpha"],
++                                  loss_weight=self.cls_loss_config["loss_weight"], class_weight=_cw)
+         self.reg_loss_config = model_config["head"]["loss"]["reg"]
+         self.loss_reg = SparseBox3DLoss(box_weight=self.reg_loss_config["box_weight"], valid_vel_weight=head_config["valid_vel_weight"])
+         self.id_loss_config = model_config["head"]["loss"]["id"]
+@@ -242,7 +246,9 @@ class SetCriterion(nn.Module):
+             )
+             output[f"loss_cls_dn_{decoder_idx}"] = cls_loss
+             output.update(reg_loss)
+-        output["loss_dense_depth"] = self.loss_depth(depths, data["gt_depth"])
++        # RGB-only fine-tune: skip dense-depth loss when depth GT is not provided.
++        if depths is not None and "gt_depth" in data:
++            output["loss_dense_depth"] = self.loss_depth(depths, data["gt_depth"])
+         return output
+ 
+     def prepare_for_dn_loss(self, model_outs, prefix=""):
+@@ -288,7 +294,8 @@ class FocalLoss(nn.Module):
+                  gamma=2.0,
+                  alpha=0.25,
+                  reduction='mean',
+-                 loss_weight=1.0):
++                 loss_weight=1.0,
++                 class_weight=None):
+         """
+         Args:
+             use_sigmoid (bool): If True, uses a sigmoid + binary focal loss.
+@@ -305,6 +312,11 @@ class FocalLoss(nn.Module):
+         self.alpha = alpha
+         self.reduction = reduction
+         self.loss_weight = loss_weight
++        # per-class weight [C] for rare-class reweighting (broadcast over the class dim)
++        if class_weight is not None:
++            self.register_buffer("class_weight", torch.as_tensor(list(class_weight), dtype=torch.float32))
++        else:
++            self.class_weight = None
+ 
+     def forward(self,
+                 pred,
+@@ -327,7 +339,15 @@ class FocalLoss(nn.Module):
+                                                  of dividing by the batch size.
+         """
+         num_classes = pred.size(1)
+-        valid_mask = (target >= 0) & (target < num_classes)  # ignore negative/out-of-range
++        # A5 focal background-fix (env-gated A5_BGFIX=1): the stock loss drops every background/
++        # unmatched query (target==num_classes) via the valid_mask below -> zero FP-suppression
++        # gradient. With A5_BGFIX=1 we KEEP those queries as an all-zero-negative row so they get
++        # an FP-restoring gradient (pulls background logits down). Drop only <0 (ignore/DN-pad).
++        _bgfix = os.environ.get("A5_BGFIX", "0") == "1"
++        if _bgfix:
++            valid_mask = target >= 0
++        else:
++            valid_mask = (target >= 0) & (target < num_classes)  # ignore negative/out-of-range
+         if not valid_mask.any():
+             # No valid samples, return zero loss
+             return pred.new_tensor(0.0)
+@@ -339,7 +359,12 @@ class FocalLoss(nn.Module):
+             weight = weight[valid_mask]
+ 
+         # Now safe to do one_hot
+-        one_hot_target = F.one_hot(valid_target, num_classes=num_classes).float()
++        if _bgfix:
++            # one_hot over num_classes+1 then drop the background column -> background rows all-zero
++            one_hot_target = F.one_hot(valid_target.clamp(max=num_classes),
++                                       num_classes=num_classes + 1)[:, :num_classes].float()
++        else:
++            one_hot_target = F.one_hot(valid_target, num_classes=num_classes).float()
+ 
+         log_pt = F.binary_cross_entropy_with_logits(
+             pred,
+@@ -353,6 +378,10 @@ class FocalLoss(nn.Module):
+ 
+         loss = focal_weight * log_pt
+ 
++        # Per-class reweighting (rare-class upweighting): broadcast [C] over [N, C].
++        if self.class_weight is not None:
++            loss = loss * self.class_weight.to(loss.device)[None, :]
++
+         # Apply per-sample weighting if provided (e.g., for imbalance in data).
+         if weight is not None:
+             weight = weight.float()
+diff --git a/nvidia_tao_pytorch/cv/sparse4d/model/instance_bank.py b/nvidia_tao_pytorch/cv/sparse4d/model/instance_bank.py
+index 4a0d6ab..4ffbae0 100644
+--- a/nvidia_tao_pytorch/cv/sparse4d/model/instance_bank.py
++++ b/nvidia_tao_pytorch/cv/sparse4d/model/instance_bank.py
+@@ -91,6 +91,55 @@ class InstanceBank(nn.Module):
+         self.use_temporal_align = use_temporal_align
+         self.time_interval = self.default_time_interval
+ 
++        # ---- CCS (STEP 2): geometry-conditioned per-anchor decay (disabled by default) ----
++        # When enabled, the scalar confidence_decay in cache() is replaced, per tracked
++        # anchor, by a value in [ccs_decay_lo, ccs_decay_hi] driven by the anchor's
++        # current-frame cross-view reprojection consensus c_geo (fraction of cameras that
++        # should see the box where a compatible RT-DETR 2D detection covers it). Confirmed
++        # tracks (c_geo high) survive/keep IDs longer; visible-but-unconfirmed tracks decay
++        # faster. Anchors not visible in any camera fall back to the scalar base decay, so
++        # genuinely occluded tracks are protected. Strictly causal: uses only current-frame dets.
++        self.ccs_enabled = False
++        self.ccs_cams = None       # {cam_id: dict(K,R,t,W,H)}
++        self.ccs_dets = None       # {"cam_id|frame": [[off_cls,x1,y1,x2,y2,conf], ...]}
++        self.ccs_shift = (0.0, 0.0)
++        self.ccs_decay_lo = 0.85   # STEP 2b: tightened from 0.80
++        self.ccs_decay_hi = 0.93   # STEP 2b: tightened from 0.95
++        self.ccs_conf = 0.25
++        self.ccs_ngc2off = {0: 0, 1: 4, 2: 5, 3: 2, 4: 3, 5: 1, 6: 6}
++        # STEP 2b coverage gates: a tracked anchor gets c_geo-modulated decay ONLY if BOTH
++        #   (1) it is visible in >= ccs_min_cams cameras this frame, and
++        #   (2) its OFFICIAL class id is in ccs_cover (per-scene RT-DETR-coverage>=tau set).
++        # Otherwise it falls back EXACTLY to the scalar confidence_decay (0.9). ccs_cover=None
++        # disables the class gate (every class eligible).
++        self.ccs_min_cams = 3
++        self.ccs_cover = None      # set of OFFICIAL class ids, or None (all eligible)
++        # STEP 2c SCENE-LEVEL camera gate: cross-view consensus is only meaningful with enough
++        # cameras. If the scene has < ccs_min_scene_cams calibration cameras, the WHOLE CCS path
++        # is a no-op (cache() runs the scalar confidence_decay), so such scenes are byte-identical
++        # to base (floor-safe by construction). ccs_min_scene_cams=0 disables the scene gate.
++        self.ccs_min_scene_cams = 0
++        self.ccs_scene_disabled = False
++        self.ccs_n_cams = 0
++        self._ccs_frame = 0
++        # [n_frames, n_modulated_anchor_evals, sum_cgeo(modulated), n_visge_M, n_fallback]
++        self._ccs_stats = [0, 0, 0.0, 0, 0]
++
++        # ---- CVC-Assoc (OUR architecture): LEARNED per-anchor survival gate (disabled) ----
++        # Replaces the scalar confidence_decay in cache() with a small MLP (CVCAssocHead) that
++        # maps [track state + geometry + cross-view consensus + id feature] -> g in (lo,hi).
++        # Floor-safe by construction: cvc_enabled defaults False -> byte-identical to base/CCS;
++        # and the head's final layer inits to g==confidence_decay(0.9). Mutually exclusive with
++        # CCS. Strictly causal (current+past frames only). Enabled via cvc_assoc_head.enable_cvc.
++        self.cvc_enabled = False
++        self.cvc_head = None       # trained CVCAssocHead (float32)
++        self.cvc_cams = None       # {cam_id: dict(K,R,t,W,H)}
++        self.cvc_dets = None       # {"cam_id|frame": [[off_cls,x1,y1,x2,y2,conf], ...]}
++        self.cvc_shift = (0.0, 0.0)
++        self.cvc_ngc2off = {0: 0, 1: 4, 2: 5, 3: 2, 4: 3, 5: 1, 6: 6}
++        self.cvc_conf = 0.25
++        self._cvc_frame = 0
++
+         # filter out new anchors that are nearby cached anchors
+         self.grid_filter = AnchorSelector(grid_size=grid_filter) if grid_filter is not None else None
+ 
+@@ -160,6 +209,192 @@ class InstanceBank(nn.Module):
+             self.cached_gt_index_mapping = None
+             self.cached_query_indices = None
+ 
++    # ---- CCS (STEP 2) helpers ----
++    def enable_ccs(self, cams, dets, shift=(0.0, 0.0), decay_lo=0.85,
++                   decay_hi=0.93, conf=0.25, ngc2off=None,
++                   min_cams=3, cover_classes=None, min_scene_cams=0):
++        """Turn on geometry-conditioned per-anchor decay (STEP 2b/2c gated).
++
++        cams          : {cam_id: dict(K(3x3 np), R(3x3 np), t(3, np), W, H)}  (world frame)
++        dets          : {"cam_id|frame": [[off_cls,x1,y1,x2,y2,conf], ...]}   (official cls ids)
++        shift         : (Cx, Cy) recenter shift; anchor(recentered) + shift -> original world
++        min_cams      : M for the per-detection VISIBILITY gate (>=M cams see the box to modulate)
++        cover_classes : iterable of OFFICIAL class ids eligible for c_geo modulation in this
++                        scene. None -> class gate disabled (all eligible).
++        min_scene_cams: STEP 2c SCENE gate K. If the scene has < K cameras, CCS is a COMPLETE
++                        no-op (scalar confidence_decay) -> byte-identical to base. 0 disables it.
++        """
++        self.ccs_cams = {cid: dict(K=np.asarray(c["K"], np.float64),
++                                   R=np.asarray(c["R"], np.float64),
++                                   t=np.asarray(c["t"], np.float64),
++                                   W=int(c["W"]), H=int(c["H"])) for cid, c in cams.items()}
++        self.ccs_n_cams = len(self.ccs_cams)
++        self.ccs_min_scene_cams = int(min_scene_cams)
++        # ---- SCENE-LEVEL camera gate (STEP 2c) ----
++        if self.ccs_n_cams < self.ccs_min_scene_cams:
++            self.ccs_enabled = False        # whole CCS path off -> scalar decay -> == base
++            self.ccs_scene_disabled = True
++            self._ccs_stats = [0, 0, 0.0, 0, 0]
++            return
++        self.ccs_scene_disabled = False
++        # Symmetric mutual-exclusion guard (enable_cvc raises the reverse). ValueError, not assert,
++        # so it survives `python -O` (which strips asserts). Without it, enable_cvc()-then-
++        # enable_ccs() would leave BOTH flags True and cache() would silently prefer CVC, ignoring
++        # CCS. cvc_enabled is always False on the armed ccs2c path (it never calls enable_cvc).
++        if getattr(self, "cvc_enabled", False):
++            raise ValueError("CVC and CCS are mutually exclusive (CVC already enabled on this bank)")
++        self.ccs_enabled = True
++        self.ccs_dets = dets
++        self.ccs_shift = (float(shift[0]), float(shift[1]))
++        self.ccs_decay_lo = float(decay_lo)
++        self.ccs_decay_hi = float(decay_hi)
++        self.ccs_conf = float(conf)
++        if ngc2off is not None:
++            self.ccs_ngc2off = dict(ngc2off)
++        self.ccs_min_cams = int(min_cams)
++        self.ccs_cover = None if cover_classes is None else set(int(c) for c in cover_classes)
++        self._ccs_stats = [0, 0, 0.0, 0, 0]
++
++    def set_ccs_frame(self, frame_id):
++        """Set the current video frame id (for dets lookup). Called each step by run_infer."""
++        self._ccs_frame = int(frame_id)
++
++    def ccs_report(self):
++        """Return a one-line sanity summary of the coverage-gated c_geo modulation."""
++        if self.ccs_scene_disabled:
++            return (f"[CCS] SCENE-GATE: n_cams={self.ccs_n_cams} < K={self.ccs_min_scene_cams} "
++                    f"-> CCS DISABLED (scalar decay={self.confidence_decay}, == base)")
++        nf, nmod, sc, nvis, nfb = self._ccs_stats
++        cov = "ALL" if self.ccs_cover is None else sorted(self.ccs_cover)
++        return (f"[CCS] n_cams={self.ccs_n_cams}>=K={self.ccs_min_scene_cams} frames={nf} "
++                f"vis>=M({self.ccs_min_cams})={nvis} modulated={nmod} "
++                f"fallback0.9={nfb} mean_cgeo(modulated)="
++                f"{(sc / nmod) if nmod else float('nan'):.3f} "
++                f"decay∈[{self.ccs_decay_lo},{self.ccs_decay_hi}] cover={cov}")
++
++    @torch.no_grad()
++    def _ccs_decay_vec(self, anchor_t, cls_ids_t):
++        """Per-anchor decay for the tracked (temporal) slots from current-frame c_geo.
++
++        anchor_t : [bs, T, box_dims] (recentered-world; X,Y,Z linear, W,L,H log)
++        cls_ids_t: [bs, T] predicted class (NGC order)
++        Returns  : [bs, T] float tensor of decay values.
++        """
++        bs, T = cls_ids_t.shape
++        dev, dt = anchor_t.device, anchor_t.dtype
++        out = torch.full((bs, T), float(self.confidence_decay), device=dev, dtype=dt)
++        a = anchor_t.detach().float().cpu().numpy()
++        cls = cls_ids_t.detach().cpu().numpy()
++        fr = self._ccs_frame
++        cam_items = list(self.ccs_cams.items())
++        self._ccs_stats[0] += 1
++        for bi in range(bs):
++            X = a[bi, :, 0] + self.ccs_shift[0]
++            Y = a[bi, :, 1] + self.ccs_shift[1]
++            Z = a[bi, :, 2]
++            Hh = np.exp(a[bi, :, 5])                       # decoded height (log->linear)
++            off = np.array([self.ccs_ngc2off.get(int(c), int(c)) for c in cls[bi]])
++            Pc = np.stack([X, Y, Z], 1)                    # centers (T,3)
++            Pf = np.stack([X, Y, Z - Hh / 2.0], 1)         # footprints (T,3)
++            vis = np.zeros(T, np.int32)
++            hit = np.zeros(T, np.int32)
++            for cid, cam in cam_items:
++                K, R, t, W, H = cam["K"], cam["R"], cam["t"], cam["W"], cam["H"]
++
++                def proj(P):
++                    pc = P @ R.T + t
++                    d = pc[:, 2]
++                    uv = pc @ K.T
++                    ok = d > 1e-6
++                    u = np.where(ok, uv[:, 0] / np.where(ok, uv[:, 2], 1.0), -1e9)
++                    v = np.where(ok, uv[:, 1] / np.where(ok, uv[:, 2], 1.0), -1e9)
++                    return u, v, ok
++                uc, vc, okc = proj(Pc)
++                visible = okc & (uc >= 0) & (uc < W) & (vc >= 0) & (vc < H)
++                vis += visible.astype(np.int32)
++                dl = self.ccs_dets.get(f"{cid}|{fr}")
++                if not dl:
++                    continue
++                arr = np.asarray(dl, np.float64)
++                arr = arr[arr[:, 5] >= self.ccs_conf]
++                if len(arr) == 0:
++                    continue
++                uf, vf, okf = proj(Pf)
++                dcls = arr[:, 0].astype(int)
++                dx1, dy1, dx2, dy2 = arr[:, 1], arr[:, 2], arr[:, 3], arr[:, 4]
++                # Vectorized over (T anchors x Ndet boxes) -- exact replacement for the
++                # per-anchor python loop. An anchor hits this camera iff it is visible AND
++                # (center-uv OR valid footprint-uv) lands in a same-class det box.
++                clsm = off[:, None] == dcls[None, :]                    # (T, Ndet)
++                cin = ((uc[:, None] >= dx1[None, :]) & (uc[:, None] <= dx2[None, :]) &
++                       (vc[:, None] >= dy1[None, :]) & (vc[:, None] <= dy2[None, :]))
++                fin = (okf[:, None] &
++                       (uf[:, None] >= dx1[None, :]) & (uf[:, None] <= dx2[None, :]) &
++                       (vf[:, None] >= dy1[None, :]) & (vf[:, None] <= dy2[None, :]))
++                match = clsm & (cin | fin)                             # (T, Ndet)
++                hit += (visible & match.any(axis=1)).astype(np.int32)
++            seen = vis > 0
++            cgeo = np.where(seen, hit / np.maximum(vis, 1), 0.0)
++            decay = self.ccs_decay_lo + (self.ccs_decay_hi - self.ccs_decay_lo) * cgeo
++            # STEP 2b coverage gates -- BOTH required to c_geo-modulate the decay:
++            #   (1) VISIBILITY: box visible in >= ccs_min_cams cameras this frame.
++            #   (2) CLASS-COVERAGE: box's OFFICIAL class is in ccs_cover (RT-DETR coverage>=tau).
++            # Anything failing either gate falls back EXACTLY to the scalar base decay (0.9).
++            vis_gate = vis >= self.ccs_min_cams
++            if self.ccs_cover is None:
++                cls_gate = np.ones(T, bool)
++            else:
++                cls_gate = np.array([o in self.ccs_cover for o in off], bool)
++            gate = vis_gate & cls_gate
++            dvec = np.where(gate, decay, float(self.confidence_decay))
++            out[bi] = torch.from_numpy(dvec).to(device=dev, dtype=dt)
++            self._ccs_stats[1] += int(gate.sum())
++            self._ccs_stats[2] += float(cgeo[gate].sum())
++            self._ccs_stats[3] += int(vis_gate.sum())
++            self._ccs_stats[4] += int((~gate).sum())
++        return out
++
++    # ---- CVC-Assoc (OUR architecture) runtime hooks ----
++    def set_cvc_frame(self, frame_id):
++        """Set current video frame id for the CVC consensus dets lookup (mirror set_ccs_frame)."""
++        self._cvc_frame = int(frame_id)
++
++    @torch.no_grad()
++    def _cvc_decay_vec(self, feat_t, anchor_t, cur_conf, cls_ids_t):
++        """LEARNED per-anchor decay g in (lo,hi) for the tracked (temporal) slots.
++
++        All inputs are the CURRENT-frame refined temporal slots (indexed [:, :num_temp]),
++        matching what the offline labeler snapshots, so training and inference see the same
++        feature. Causal: cross-view consensus uses only current-frame 2D dets; state uses
++        current + previous cached confidence. Byte-safe when disabled (never called then).
++
++        feat_t   : [bs, T, embed_dims]  current instance_feature[:, :T]  (id feature)
++        anchor_t : [bs, T, box_dims]    current anchor[:, :T]  (recentered world)
++        cur_conf : [bs, T]              current sigmoid confidence[:, :T]
++        cls_ids_t: [bs, T]              current predicted class (NGC order)
++        Returns  : [bs, T] decay in (cvc_head.decay_lo, cvc_head.decay_hi).
++        """
++        from cvc_assoc_head import cvc_geom_scalars   # head module is on sys.path
++        bs, T = cls_ids_t.shape
++        dev, dt = anchor_t.device, anchor_t.dtype
++        # keep the head co-located with the data (one-time move at most)
++        head = self.cvc_head
++        if next(head.parameters()).device != dev:
++            head.to(dev)
++        a = anchor_t.detach().float().cpu().numpy()
++        cls = cls_ids_t.detach().cpu().numpy()
++        cvc5 = torch.zeros((bs, T, 5), device=dev, dtype=torch.float32)
++        for bi in range(bs):
++            s = cvc_geom_scalars(self.cvc_cams, self.cvc_dets, self._cvc_frame,
++                                 a[bi], cls[bi], shift=self.cvc_shift,
++                                 ngc2off=self.cvc_ngc2off, conf=self.cvc_conf)
++            cvc5[bi] = torch.from_numpy(s).to(dev)
++        feat = head.build_feature(
++            self.confidence.float(), cur_conf.float(), anchor_t.float(),
++            feat_t.float(), cvc5, cls_ids_t.long())
++        g = head(feat.float())                       # [bs, T] in (lo, hi)
++        return g.to(device=dev, dtype=dt)
++
+     def get(self, batch_size, metas=None, dn_metas=None):
+         """Get the instance feature, anchor, and re-ID feature."""
+         instance_feature = torch.tile(
+@@ -300,10 +535,30 @@ class InstanceBank(nn.Module):
+         confidence = confidence.detach()
+ 
+         self.metas = metas
++        cls_ids = confidence.argmax(dim=-1)  # [bs, num_anchor] predicted class (NGC order)
+         confidence = confidence.max(dim=-1).values.sigmoid()
+         if self.confidence is not None:
++            if getattr(self, "cvc_enabled", False):
++                # Runtime invariant (defense-in-depth vs the enable-time guards): the two learned/
++                # heuristic decay paths must never both be live, else the floor guarantees blur.
++                if self.ccs_enabled:
++                    raise RuntimeError("CVC and CCS both enabled in cache() — mutually exclusive")
++                # OUR learned gate (mutually exclusive with CCS; floor-safe when disabled)
++                decay = self._cvc_decay_vec(
++                    instance_feature[:, : self.num_temp_instances],
++                    anchor[:, : self.num_temp_instances],
++                    confidence[:, : self.num_temp_instances],
++                    cls_ids[:, : self.num_temp_instances],
++                )
++            elif self.ccs_enabled:
++                decay = self._ccs_decay_vec(
++                    anchor[:, : self.num_temp_instances],
++                    cls_ids[:, : self.num_temp_instances],
++                )  # [bs, num_temp] per-anchor decay
++            else:
++                decay = self.confidence_decay  # scalar (default path, unchanged)
+             confidence[:, : self.num_temp_instances] = torch.maximum(
+-                self.confidence * self.confidence_decay,
++                self.confidence * decay,
+                 confidence[:, : self.num_temp_instances],
+             )
+         self.temp_confidence = confidence
+diff --git a/nvidia_tao_pytorch/cv/sparse4d/model/ops/setup_ext.py b/nvidia_tao_pytorch/cv/sparse4d/model/ops/setup_ext.py
+new file mode 100644
+index 0000000..41494d4
+--- /dev/null
++++ b/nvidia_tao_pytorch/cv/sparse4d/model/ops/setup_ext.py
+@@ -0,0 +1,25 @@
++"""Build the deformable_aggregation_ext CUDA extension in-place."""
++import os
++from setuptools import setup
++from torch.utils.cpp_extension import BuildExtension, CUDAExtension
++
++here = os.path.dirname(os.path.abspath(__file__))
++src = os.path.join(here, "src")
++
++setup(
++    name="deformable_aggregation_ext",
++    ext_modules=[
++        CUDAExtension(
++            name="deformable_aggregation_ext",
++            sources=[
++                os.path.join(src, "deformable_aggregation.cpp"),
++                os.path.join(src, "deformable_aggregation_cuda.cu"),
++            ],
++            extra_compile_args={
++                "cxx": ["-O3"],
++                "nvcc": ["-O3"],
++            },
++        )
++    ],
++    cmdclass={"build_ext": BuildExtension},
++)
+diff --git a/nvidia_tao_pytorch/cv/sparse4d/model/sparse4d_head.py b/nvidia_tao_pytorch/cv/sparse4d/model/sparse4d_head.py
+index a7c5999..a2903ab 100644
+--- a/nvidia_tao_pytorch/cv/sparse4d/model/sparse4d_head.py
++++ b/nvidia_tao_pytorch/cv/sparse4d/model/sparse4d_head.py
+@@ -152,6 +152,7 @@ class Sparse4DHead(nn.Module):
+             num_temp_instances=self.instance_bank_cfg["num_temp_instances"],
+             default_time_interval=self.instance_bank_cfg["default_time_interval"],
+             confidence_decay=self.instance_bank_cfg["confidence_decay"],
++            max_time_interval=self.instance_bank_cfg.get("max_time_interval", 2),
+             feat_grad=self.instance_bank_cfg["feat_grad"],
+             use_temporal_align=self.instance_bank_cfg["use_temporal_align"],
+         )

@@ -1,0 +1,36 @@
+input: work/pred_test_cd95_26.txt
+       13106 rows over 1800 frames, K=5, 200 cutoffs
+
+  [submitted]  (expected: causal)
+    200 cutoffs tested, 0 leak(s)
+
+  [hysteresis]  (expected: causal)
+    200 cutoffs tested, 0 leak(s)
+
+  [gapfill]  (expected: NON-causal, must leak)
+    T=   232  full|<=T     1607 rows   prefix     1604 rows   LEAK
+    T=   447  full|<=T     2967 rows   prefix     2965 rows   LEAK
+    T=   537  full|<=T     3619 rows   prefix     3618 rows   LEAK
+    T=   582  full|<=T     3978 rows   prefix     3976 rows   LEAK
+    T=   931  full|<=T     6387 rows   prefix     6386 rows   LEAK
+    T=  1038  full|<=T     6927 rows   prefix     6926 rows   LEAK
+    T=  1083  full|<=T     7074 rows   prefix     7071 rows   LEAK
+    T=  1182  full|<=T     7613 rows   prefix     7610 rows   LEAK
+    T=  1226  full|<=T     7882 rows   prefix     7879 rows   LEAK
+    T=  1262  full|<=T     8108 rows   prefix     8107 rows   LEAK
+    T=  1388  full|<=T     9316 rows   prefix     9315 rows   LEAK
+    T=  1450  full|<=T     9903 rows   prefix     9902 rows   LEAK
+    T=  1522  full|<=T    10512 rows   prefix    10510 rows   LEAK
+    T=  1540  full|<=T    10659 rows   prefix    10657 rows   LEAK
+    T=  1665  full|<=T    11832 rows   prefix    11830 rows   LEAK
+    T=  1791  full|<=T    13214 rows   prefix    13213 rows   LEAK
+    200 cutoffs tested, 16 leak(s)
+
+==================================================================
+  submitted    causal                           as expected
+  hysteresis   causal                           as expected
+  gapfill      reads future frames (16/200)     as expected
+==================================================================
+
+The submitted configuration is prefix-invariant: it is online.
+The discarded gapfill variant leaks, confirming the test discriminates.

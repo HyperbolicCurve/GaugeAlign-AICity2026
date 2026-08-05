@@ -1,0 +1,90 @@
+GaugeAlign — third-party components and licensing
+=================================================
+
+The code in this repository authored by us is released under the MIT License
+(see LICENSE). It depends on, and in one case patches, third-party work that
+keeps its own terms. Nothing below is redistributed here except where stated.
+
+
+1. NVIDIA TAO PyTorch backend
+-----------------------------
+    Source   : https://github.com/NVIDIA/tao_pytorch_backend
+    Version  : Release/7.0.1 (d99ff772e2cff894015d81a96d2cb92119000e19)
+    License  : Apache License 2.0
+    Copyright: (c) 2026 NVIDIA CORPORATION & AFFILIATES
+
+    NOT redistributed. `scripts/setup_tao_backend.sh` clones it from upstream at
+    the pinned commit.
+
+    We modify five files. Rather than vendor a fork, we ship only the diff, at
+    `patches/tao_sparse4d_gaugealign.patch`, so it stays unambiguous which lines
+    are NVIDIA's and which are ours:
+
+      nvidia_tao_pytorch/cv/backbone_v2/__init__.py
+          lazy backbone imports, so absent optional dependencies do not break a
+          ResNet-50 model
+      nvidia_tao_pytorch/cv/sparse4d/model/sparse4d_head.py
+          pass max_time_interval through to the instance bank (1 line)
+      nvidia_tao_pytorch/cv/sparse4d/model/ops/setup_ext.py       (new file)
+          build script for the deformable-aggregation CUDA extension
+      nvidia_tao_pytorch/cv/sparse4d/model/instance_bank.py
+          our CVC-Assoc learned survival gate and cross-view consensus hooks;
+          both disabled by default
+      nvidia_tao_pytorch/cv/sparse4d/model/criterion.py
+          optional background-query loss term, used only in the fine-tuning
+          study; disabled by default
+
+    Modifications are (c) 2026 the GaugeAlign authors and are licensed under
+    Apache License 2.0, matching the files they modify, as required by that
+    license. Modified files carry NVIDIA's original copyright notices.
+
+
+2. NVIDIA TAO Sparse4D warehouse model (weights)
+------------------------------------------------
+    Source   : https://catalog.ngc.nvidia.com/orgs/nvidia/teams/tao/models/sparse4d_rn50
+    Version  : deployable_v2.2 (ResNet-50 variant)
+    License  : NVIDIA Open Model License
+
+    NOT redistributed. Download from NGC under NVIDIA's terms; see
+    docs/INSTALL.md. Our first-place result uses this checkpoint FROZEN, with no
+    fine-tuning of any kind.
+
+    Files used: sparse4d_warehouse_v2.2_r50.pth, _ov_kmeans900_v2.2_r50.npy,
+    experiment.yaml.
+
+
+3. TrackEval (AI City fork)
+---------------------------
+    Upstream : https://github.com/JonathonLuiten/TrackEval          (MIT)
+    Fork     : https://github.com/ZIOVISION/AIC2025_Track1_ZV       (MIT)
+               released by the 2025 AI City Challenge Track 1 winning team
+
+    NOT redistributed. `scripts/setup_trackeval.sh` fetches it. Used only for
+    LOCAL development metrics on the validation scenes; every hidden-test number
+    reported in the paper and in docs/RESULTS.md comes from the official
+    challenge evaluation server.
+
+
+4. AI City Challenge 2026 Track 1 dataset
+-----------------------------------------
+    Source   : https://huggingface.co/datasets/nvidia/PhysicalAI-SmartSpaces
+               subset MTMC_Tracking_2026
+    License  : CC-BY-4.0
+
+    NOT redistributed. See docs/DATA.md.
+
+
+5. spatialai_data_utils stub  (third_party/spatialai_data_utils/)
+-----------------------------------------------------------------
+    Minimal local stand-in for an NVIDIA-internal utility package that the TAO
+    Sparse4D dataloader imports but whose functionality is unnecessary for
+    inference. Written by us, MIT-licensed, and INCLUDED in this repository. It
+    contains no NVIDIA code — only the small set of symbols the import path
+    requires.
+
+
+6. Figures (assets/)
+--------------------
+    Produced by us for the accompanying paper; MIT along with the rest of the
+    repository. Qualitative figures visualize frames from the CC-BY-4.0 dataset
+    listed in (4).
