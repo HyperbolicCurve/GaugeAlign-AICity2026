@@ -142,23 +142,6 @@ python gaugealign/scene_center.py --dataset_root $DATASET_ROOT --split test
 #   ...
 ```
 
-## Is it really online?
-
-The challenge awards a bonus for online systems, and "online" is a property of the *whole*
-pipeline — post-processing can silently read future frames. So we measure it instead of claiming
-it. [`scripts/prefix_check.py`](scripts/prefix_check.py) requires that post-processing a truncated
-sequence give byte-identical output to truncating the post-processed full sequence:
-
-```
-  submitted    causal                           as expected
-  hysteresis   causal                           as expected
-  gapfill      reads future frames (16/200)     as expected
-```
-
-The last row is the point: `gapfill` is a variant we **discarded** for being non-causal, and it
-is included so the test can visibly fail. A test nothing fails proves nothing.
-Recorded output: [`results/prefix_check_warehouse026.txt`](results/prefix_check_warehouse026.txt).
-
 ## What is in here
 
 ```
@@ -212,8 +195,7 @@ Stated plainly, matching the paper:
 @inproceedings{wu2026gaugealign,
   title     = {Aligning Learned Spatial Priors: Gauge Canonicalization for
                Multi-Camera 3D Perception under Sim-to-Real Transfer},
-  author    = {Wu, Xianjin and Fang, Heng and Xi, Xuanyang and Tang, Yiping and
-               Xu, Di and Bai, Xiang and Liang, Dingkang},
+  author    = {Xianjin Wu and Heng Fang and Xuanyang Xi and Yiping Tang and Di Xi and Xiang Bai and Dingkang Liang},
   booktitle = {Proceedings of the European Conference on Computer Vision (ECCV) Workshops},
   year      = {2026}
 }
