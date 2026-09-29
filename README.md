@@ -2,7 +2,7 @@
 
 # GaugeAlign
 
-**The Winning Solution for Track 1 of the 2026 {AI} City Challenge: Gauge Canonicalization for Multi-Camera 3D Perception**
+**The Winning Solution for Track 1 of the 2026 AI City Challenge: Gauge Canonicalization for Multi-Camera 3D Perception**
 
 🏆 **1st place** — AI City Challenge 2026, Track 1 (Multi-Camera 3D Perception, Sim2Real)
 
@@ -193,7 +193,7 @@ Stated plainly, matching the paper:
 
 ```bibtex
 @inproceedings{wu2026gauge,
-title={The Winning Solution for Track 1 of the 2026 {AI} City Challenge: Gauge Canonicalization for Multi-Camera 3D Perception},
+title={The Winning Solution for Track 1 of the 2026 AI City Challenge: Gauge Canonicalization for Multi-Camera 3D Perception},
 author={Xianjin Wu and Heng Fang and Xuanyang Xi and Yiping Tang and Di Xu and Xiang Bai and Dingkang Liang},
 booktitle={Towards Sim2Real Transfer and Unified Reasoning: 10th AI City Challenge},
 year={2026},
