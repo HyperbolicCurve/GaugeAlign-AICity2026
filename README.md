@@ -10,6 +10,8 @@
 [![HOTA](https://img.shields.io/badge/3D%20HOTA-56.54-blue)](docs/RESULTS.md)
 [![License](https://img.shields.io/badge/code-MIT-green)](LICENSE)
 
+[Paper (PDF)](docs/GaugeAlign.pdf)
+
 Xianjin Wu\*, Heng Fang\*, Xuanyang Xi, Yiping Tang, Di Xu, Xiang Bai, Dingkang Liang<sup>✉</sup>
 
 Huazhong University of Science and Technology · Huawei Technologies
